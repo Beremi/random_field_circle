@@ -133,6 +133,7 @@ def sample_tunnel_circle_fields(
     sigma_lambda_field=1.0,
     lambda0=1.0,
     sigma_log_lambda=0.25,
+    force_negative=True,
     rng=None,
 ):
     """
@@ -158,11 +159,15 @@ def sample_tunnel_circle_fields(
     ell_A, sigma_A_field : float
         Correlation length and std of the underlying u_A field.
     mu_A, sigma_A : float
-        Mean and scaling of A(θ).
+        Mean and scaling of A(θ). Set `force_negative=False` to allow
+        positive amplitudes.
     ell_lambda, sigma_lambda_field : float
         Correlation length and std of the underlying u_λ field.
     lambda0, sigma_log_lambda : float
         Mean and std in log-scale for λ(θ).
+    force_negative : bool
+        If True (default) enforce negative amplitudes to model damage.
+        Set to False when data support an increase in log k near the wall.
     rng : np.random.Generator, optional
         RNG used for both fields.
 
@@ -187,7 +192,8 @@ def sample_tunnel_circle_fields(
 
     # Amplitude (reduction at the wall)
     A_theta = mu_A + sigma_A * u_A
-    A_theta = -np.abs(A_theta)  # enforce reduction (negative)
+    if force_negative:
+        A_theta = -np.abs(A_theta)  # enforce reduction (negative)
 
     # Radial decay-rate
     log_lambda_theta = np.log(lambda0) + sigma_log_lambda * u_lambda
